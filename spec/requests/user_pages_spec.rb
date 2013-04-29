@@ -1,4 +1,5 @@
 require 'spec_helper'
+include ApplicationHelper
 
 describe "User pages" do
 
@@ -33,7 +34,7 @@ describe "User pages" do
     describe "delete links" do
       it { should_not have_link('delete') }
 
-      describe "as an admin user" do
+      describe "as an admin user in UI" do
         let(:admin) {FactoryGirl.create(:admin) }
         before do
           sign_in admin
@@ -45,6 +46,14 @@ describe "User pages" do
           expect{ click_link('delete') }.to change(User, :count).by(-1)
         end
         it { should_not have_link('delete', href: user_path(admin)) }
+      end
+
+      describe "as an admin user" do
+        let(:admin) {FactoryGirl.create(:admin) }
+        before { sign_in admin}
+        it "should not be able to delete itself" do
+          expect { delete user_path(admin) }.not_to change(User, :count)
+        end
       end
     end
   end
@@ -82,7 +91,7 @@ describe "User pages" do
   			fill_in "Name",						with: ""
   			fill_in "Email",					with: "user.example.com"
   			fill_in "Password",					with: "foob"
-  			fill_in "Confirmation",				with: "foob"
+  			fill_in "Confirm Password",				with: "foob"
         click_button submit
   		end
 
@@ -97,7 +106,7 @@ describe "User pages" do
   			fill_in "Name",						with: "Example User"
   			fill_in "Email",					with: "user@example.com"
   			fill_in "Password",					with: "foobar"
-  			fill_in "Confirmation",				with: "foobar"
+  			fill_in "Confirm Password",				with: "foobar"
   		end
 
   		it "should create a user" do

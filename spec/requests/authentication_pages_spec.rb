@@ -1,4 +1,5 @@
 require 'spec_helper'
+include ApplicationHelper
 
 describe "Authentication" do
 
@@ -52,6 +53,13 @@ describe "Authentication" do
     describe "for non signed-in users" do
       let(:user) { FactoryGirl.create(:user) }
 
+      describe "when visit root path" do
+        before { visit root_path }
+
+        it { should_not have_link('Profile') }
+        it { should_not have_link('Settings') }
+      end
+
       describe "when attempting to visit a protected page" do
         before do
           visit edit_user_path(user)
@@ -63,6 +71,20 @@ describe "Authentication" do
         describe "after signing in" do
           it 'should render the desied protected page' do
             page.should have_selector('title', text: 'Edit user')
+          end
+        end
+
+        describe "when sign in again" do
+          before do
+            delete signout_path
+            visit signin_path
+            fill_in 'Email', with: user.email
+            fill_in 'Password', with: user.password
+            click_button 'Sign in'
+          end
+
+          it "shoild render default (profile) page" do
+            page.should have_selector('title', text: user.name)
           end
         end
       end
@@ -112,6 +134,27 @@ describe "Authentication" do
       describe "submitting a PUT request to the Users#update action" do
         before { put user_path(wrong_user) }
         specify { response.should redirect_to(root_path) }
+      end
+    end
+
+    describe "signed in user trying" do
+      let(:user)  { FactoryGirl.create(:user) }
+      before do
+        sign_in user
+      end
+
+      describe "visiting Users#new" do
+        before { visit signup_path }
+        it { should_not have_selector('h1', text: 'Sign up') }
+        it { should have_selector('h1', text: 'Welcome') }
+      end
+
+      describe "submitting a POST request to the Users#create" do
+        before do
+         post users_path(user) 
+       end
+
+       specify { response.should redirect_to(root_path) }
       end
     end
   end
