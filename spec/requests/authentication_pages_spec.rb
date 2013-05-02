@@ -107,6 +107,19 @@ describe "Authentication" do
           specify { response.should redirect_to(signin_path) }
         end
       end
+
+      describe "in Microposts controller" do
+
+        describe "submitting to the create action" do
+          before { post microposts_path }
+          specify { response.should redirect_to(signin_path) }
+        end
+
+        describe "submitting to destroy action" do
+          before { delete micropost_path(FactoryGirl.create(:micropost)) }
+          specify { response.should redirect_to(signin_path) }
+        end
+      end
     end
 
     describe "as a non admin user" do
@@ -146,7 +159,7 @@ describe "Authentication" do
       describe "visiting Users#new" do
         before { visit signup_path }
         it { should_not have_selector('h1', text: 'Sign up') }
-        it { should have_selector('h1', text: 'Welcome') }
+        it { should have_selector('h1', text: user.name) }
       end
 
       describe "submitting a POST request to the Users#create" do
